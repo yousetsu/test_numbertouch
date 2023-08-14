@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+class ButtonInfo {
+  final int index;
+  MaterialColor color;
+
+  ButtonInfo(this.index, this.color);
+}
+
 void main() {
   runApp(MyApp());
 }
@@ -19,10 +26,12 @@ class NumberTouchGame extends StatefulWidget {
   _NumberTouchGameState createState() => _NumberTouchGameState();
 }
 
-class _NumberTouchGameState extends State<NumberTouchGame> {
-  List<int> numbers = [];
-  int currentNumber = 1;
 
+class _NumberTouchGameState extends State<NumberTouchGame> {
+  //List<int> numbers = [];
+  List<ButtonInfo> btnInfo = [];
+  int currentNumber = 1;
+  MaterialColor primaryColor = Colors.orange;
   @override
   void initState() {
     super.initState();
@@ -30,27 +39,31 @@ class _NumberTouchGameState extends State<NumberTouchGame> {
   }
 
   void _initializeNumbers() {
+
     final random = Random();
-    numbers.clear();
-    for (int i = 1; i <= 16; i++) {
-      numbers.add(i);
+    btnInfo.clear();
+    for (int i = 1; i <= 9; i++) {
+      btnInfo.add(ButtonInfo(i, Colors.orange));
     }
-    numbers.shuffle(random);
+    setState(() {
+      btnInfo.shuffle(random);
+    });
   }
 
   void _handleNumberTap(int number) {
     if (number == currentNumber) {
+      ButtonInfo targetButtonInfo = btnInfo.firstWhere((buttonInfo) => buttonInfo.index == number);
       setState(() {
-        numbers.remove(number);
-        if (numbers.isEmpty) {
+        targetButtonInfo.color = Colors.grey;
+        if (currentNumber >= 9) {
           _showGameClearDialog();
         } else {
           currentNumber++;
         }
+
       });
     }
   }
-
   void _showGameClearDialog() {
     showDialog(
       context: context,
@@ -77,29 +90,35 @@ class _NumberTouchGameState extends State<NumberTouchGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Number Touch Game')),
-      body: Center(
+      body:
+     Container(
+       padding: EdgeInsets.all(10), // ボタンの内部余白を調整
+    child: Center(
         child: GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
+            crossAxisCount: 3,
+            childAspectRatio: 1.0, // アイテムのサイズを制御
+
           ),
-          itemCount: numbers.length,
+          itemCount: btnInfo.length,
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(
-              onTap: () => _handleNumberTap(numbers[index]),
-              child: Container(
-                margin: EdgeInsets.all(8),
-                color: Colors.blue,
-                child: Center(
-                  child: Text(
-                    numbers[index].toString(),
-                    style: TextStyle(fontSize: 24, color: Colors.white),
+
+                child: SizedBox(
+                  width: 5, height: 5,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: btnInfo[index].color, elevation: 16,),
+                    onPressed: () => _handleNumberTap(btnInfo[index].index),
+                    child: Text( btnInfo[index].index.toString(), style:  TextStyle(fontSize: 15.0, color:Colors.black,),),
                   ),
-                ),
-              ),
-            );
+
+                )
+
+                );
           },
         ),
       ),
+    ),
     );
   }
 }
